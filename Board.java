@@ -1,7 +1,13 @@
 package app;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
+import java.util.Scanner;
 
-class Board {
+class Board 
+{
+    // Constants and variables
     private final int SIZE;
     private final char[][] ships;
     private final char[][] tracking;
@@ -11,10 +17,12 @@ class Board {
     private static final char MISS = 'O';
     private final Random rand = new Random();
 
+    // Constants for ship shapes
     private static final int SHAPE_LINE = 0;
     private static final int SHAPE_DIAGONAL = 1;
     private static final int SHAPE_SQUARE = 2;
 
+    // Constructor to initialize the board with a given size
     public Board(int size) {
         SIZE = size;
         ships = new char[SIZE][SIZE];
@@ -23,49 +31,60 @@ class Board {
         initBoard(tracking);
     }
 
+    // Initialize the board with empty cells
+    // This method fills the board with the EMPTY character to represent unoccupied cells.
     private void initBoard(char[][] board) {
         for (int i = 0; i < SIZE; i++) Arrays.fill(board[i], EMPTY);
     }
 
+    // Show the tracking board (misses and hits)
     public void displayTrackingBoard() {
         displayBoard(tracking);
     }
 
+    // Show where ships are placed (used for debug or reveal)
     public void displayShipBoard() {
         displayBoard(ships);
     }
 
+    // Reveal the ship locations (for game end or testing)
     public void revealShipPositions() {
         System.out.println("\nREVEALING SHIP PLACEMENTS:");
         displayBoard(ships);
     }
 
+    // Prints the board with row and column labels
     private void displayBoard(char[][] board) {
-        System.out.print("   ");
-        for (int i = 1; i <= SIZE; i++) System.out.printf("%2d ", i);
-        System.out.println();
-        for (int i = 0; i < SIZE; i++) {
-            System.out.printf("%2c ", (char)('A' + i));
-            for (int j = 0; j < SIZE; j++) {
-                System.out.print(board[i][j] + "  ");
-            }
-            System.out.println();
+    System.out.print("   ");
+    for (int i = 1; i <= SIZE; i++) System.out.printf("%2d ", i);
+    System.out.println();
+    for (int i = 0; i < SIZE; i++) {
+        System.out.printf("%2c ", (char)('A' + i));
+        for (int j = 0; j < SIZE; j++) {
+            System.out.printf("%2c ", board[i][j]); 
         }
+        System.out.println();
     }
+}
 
+
+    // Check if a shot is valid (within bounds and not already shot)
     public boolean isValidShot(int row, int col) {
         return row >= 0 && row < SIZE && col >= 0 && col < SIZE && tracking[row][col] == EMPTY;
     }
 
+    // Process a shot at the given coordinates
     public boolean processShot(int row, int col) {
-    if (ships[row][col] == SHIP) {
-        ships[row][col] = HIT;
-        tracking[row][col] = HIT;  
-        System.out.println("Hit, shoot again!");
-        if (isShipSunk(row, col)) {
-            System.out.println("Ship sunk! Keep shooting.");
-        }
-        return true;
+    if (ships[row][col] == SHIP) 
+{
+    // Check if the ship is sunk before marking this cell as HIT
+    ships[row][col] = HIT;
+    tracking[row][col] = HIT;  
+    System.out.println("Hit, shoot again!");
+
+     return true;
+
+    //If the shot is a miss
     } else {
         tracking[row][col] = MISS;  // This updates for the computer's tracking
         ships[row][col] = MISS;  // Update the ship board to show a miss
@@ -74,19 +93,8 @@ class Board {
     }
 
     }
-
-    private boolean isShipSunk(int row, int col) {
-    // Scan the board to see if any remaining ship cells exist
-    for (int i = 0; i < SIZE; i++) {
-        for (int j = 0; j < SIZE; j++) {
-            if (ships[i][j] == SHIP) { // If any ship cell remains, the ship isn't fully sunk
-                return false;
-            }
-        }
-    }
-    return true; // If no ship cells remain, the ship is sunk
-}
-
+   
+    // Check if all ships are sunk
     public boolean allShipsSunk() {
         for (char[] row : ships) {
             for (char cell : row) {
@@ -96,6 +104,8 @@ class Board {
         return true;
     }
 
+    // Methods to place ships manually or randomly
+    // This method allows the player to manually place all ships on the board.
     public void manualPlaceAllShips(Scanner scanner) {
         System.out.println("Begin by placing your ships manually onto your board.");
         placeShip(scanner, "Destroyer", 2, SHAPE_SQUARE);
@@ -106,12 +116,14 @@ class Board {
         displayShipBoard();
     }
 
+    // This method places all ships randomly on the board.
     public void randomPlaceAllShips() {
         placeRandomShip(2, SHAPE_SQUARE);
         placeRandomShip(3, SHAPE_DIAGONAL);
         placeRandomShip(3, SHAPE_LINE);
     }
 
+    // Place a ship on the board based on user input or random placement
     private void placeShip(Scanner scanner, String name, int length, int shape) {
         while (true) {
             if (shape == SHAPE_SQUARE) {
@@ -145,6 +157,8 @@ class Board {
         }
     }
 
+    // Place a ship randomly on the board
+    // This method randomly places a ship of a given length and shape on the board.
     private void placeRandomShip(int length, int shape) {
         String[] directions = switch (shape) {
             case SHAPE_LINE -> new String[]{"NORTH", "SOUTH", "EAST", "WEST"};
@@ -152,6 +166,7 @@ class Board {
             default -> new String[]{"ANY"};
         };
 
+        // Keep trying to place the ship until successful
         while (true) {
             int row = rand.nextInt(SIZE);
             int col = rand.nextInt(SIZE);
@@ -160,9 +175,11 @@ class Board {
         }
     }
 
+    // Try to place a ship at the specified coordinates with the given length and direction
     private boolean tryPlaceShip(int row, int col, int length, String direction, int shape) {
         List<int[]> cells = new ArrayList<>();
 
+        
         if (shape == SHAPE_SQUARE) {
             if (row + 1 >= SIZE || col + 1 >= SIZE) return false;
             cells.add(new int[]{row, col});
@@ -224,10 +241,12 @@ class Board {
         return true;
     }
 
+    // Getters for ship and tracking cells
     public char getShipCell(int row, int col) {
         return ships[row][col];
     }
 
+    // Get the tracking cell for a shot
     public char getTrackingCell(int row, int col) {
         return tracking[row][col];
     }
